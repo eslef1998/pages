@@ -79,8 +79,8 @@ footer p {
 /* Botón flotante de WhatsApp */
 .whatsapp-float {
     position: fixed;
-    bottom: 28px;
-    right: 28px;
+    bottom: 2cm;
+    right: 2cm;
     z-index: 1200;
     background: none;
     border-radius: 50%;
@@ -160,12 +160,13 @@ body {
 }
 @media (max-width: 900px) {
     .whatsapp-float {
-        bottom: calc(1cm + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: 2cm !important;
+        right: 2cm !important;
     }
     .navbar {
 
     .whatsapp-float {
-        bottom: 16px;
+        bottom: 1006px;
         right: 16px;
     }
         padding-left: 12px;
@@ -537,8 +538,8 @@ textarea {
     .toast { min-width: 90vw !important; font-size: 14px !important; padding: 12px 8px !important; }
     .whatsapp-float {
         position: fixed !important;
-        bottom: calc(1cm + env(safe-area-inset-bottom, 0px)) !important;
-        right: 24px !important;
+        bottom: 1.5cm !important;
+        right: 1.5cm !important;
         left: auto !important;
         margin: 0 !important;
         display: flex !important;
