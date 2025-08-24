@@ -25,6 +25,33 @@ footer p {
     letter-spacing: 0.5px;
 }
 @media (max-width: 600px) {
+    /* Centrar la sección de proceso y sus elementos en móviles */
+    .process {
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .process h2 {
+        text-align: center !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .steps {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+    .step {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 95vw !important;
+        max-width: 340px !important;
+    }
     footer {
         font-size: 0.98rem;
         padding: 22px 0 10px 0;
@@ -133,6 +160,11 @@ body {
 }
 @media (max-width: 900px) {
     .navbar {
+
+    .whatsapp-float {
+        bottom: 16px;
+        right: 16px;
+    }
         padding-left: 12px;
         padding-right: 12px;
     }
@@ -500,6 +532,13 @@ textarea {
 .toast .close { margin-left: auto !important; cursor: pointer !important; background: transparent !important; border: none !important; color: rgba(255,255,255,0.9) !important; font-size: 18px !important; }
 @media (max-width: 600px) {
     .toast { min-width: 90vw !important; font-size: 14px !important; padding: 12px 8px !important; }
-
-
+    .whatsapp-float {
+        position: fixed !important;
+        bottom: calc(32px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 24px !important;
+        left: auto !important;
+        margin: 0 !important;
+        display: flex !important;
+        z-index: 1200 !important;
+    }
 }
