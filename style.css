@@ -159,6 +159,9 @@ body {
     scrollbar-width: thin;
 }
 @media (max-width: 900px) {
+    .whatsapp-float {
+        bottom: calc(1cm + env(safe-area-inset-bottom, 0px)) !important;
+    }
     .navbar {
 
     .whatsapp-float {
@@ -534,7 +537,7 @@ textarea {
     .toast { min-width: 90vw !important; font-size: 14px !important; padding: 12px 8px !important; }
     .whatsapp-float {
         position: fixed !important;
-        bottom: calc(32px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(1cm + env(safe-area-inset-bottom, 0px)) !important;
         right: 24px !important;
         left: auto !important;
         margin: 0 !important;
