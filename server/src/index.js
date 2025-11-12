@@ -54,26 +54,63 @@ async function generateReply(message, context = {}) {
         return 'Gracias por tu mensaje. Un asesor se comunicará contigo pronto.';
     }
 
-    const systemPrompt = `Eres el asistente virtual de ITAI. Responde en español con tono cercano, resume la solicitud y ofrece próximo paso. Información de apoyo: ${JSON.stringify(context)}.`;
+    const systemPrompt = `Eres el asistente virtual de ITAI, una empresa especializada en desarrollo web y chatbots con IA.
 
-    const completion = await aiClient.responses.create({
+INFORMACIÓN DE ITAI:
+- Especialistas en páginas web modernas con chat IA integrado
+- Desarrollamos chatbots que entienden productos específicos de cada negocio
+- Ofrecemos respuesta inmediata 24/7 con tono humano y natural
+- Entrenamos la IA con catálogos, FAQ y promociones del cliente
+- Sistema de captura de leads y alertas automáticas a WhatsApp
+- Soluciones personalizadas para cada tipo de negocio
+
+SERVICIOS PRINCIPALES:
+1. Páginas web con chatbot IA integrado
+2. Chatbots personalizados para WhatsApp/Facebook
+3. Sistemas de automatización de ventas
+4. Integración con CRM y bases de datos
+5. Asesoría y capacitación en herramientas digitales
+
+TONO: Conversacional, humano, cercano y profesional. Como si fueras parte del equipo de ITAI.
+OBJETIVO: Entender la necesidad del cliente y guiarlo hacia una asesoría personalizada.
+
+Responde de manera natural, pregunta detalles sobre su negocio si es necesario, y siempre ofrece una asesoría personalizada como próximo paso.
+
+Contexto adicional: ${JSON.stringify(context)}`;
+
+    const completion = await aiClient.chat.completions.create({
         model: OPENAI_MODEL,
-        input: [
+        messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: message }
-        ]
+        ],
+        max_tokens: 200,
+        temperature: 0.7
     });
 
-    const output = completion.output?.[0]?.content?.[0]?.text;
-    return output?.trim() || 'Gracias por escribirnos. Pronto te contactaremos.';
+    const output = completion.choices?.[0]?.message?.content;
+    return output?.trim() || 'Gracias por escribirnos. Un especialista de ITAI te contactará pronto para brindarte la mejor solución para tu negocio.';
 }
 
-async function sendWhatsAppAlert({ message, reply, context }) {
+async function sendWhatsAppAlert({ message, reply, context, leadInfo = null }) {
     if (!twilioClient) {
         return { sent: false, sid: null };
     }
 
-    const text = `Nuevo mensaje en el chat ITAI:\n\nCliente: ${message}\nRespuesta IA: ${reply}\nContexto: ${JSON.stringify(context)}`;
+    let text = `🤖 *NUEVO LEAD - Chat ITAI*\n\n`;
+    text += `💬 *Mensaje del cliente:*\n${message}\n\n`;
+    text += `🧠 *Respuesta IA:*\n${reply}\n\n`;
+    
+    if (leadInfo) {
+        text += `👤 *Datos del lead:*\n`;
+        text += `Nombre: ${leadInfo.name || 'No proporcionado'}\n`;
+        text += `Email: ${leadInfo.email || 'No proporcionado'}\n`;
+        text += `Teléfono: ${leadInfo.phone || 'No proporcionado'}\n`;
+        text += `Empresa: ${leadInfo.company || 'No proporcionado'}\n\n`;
+    }
+    
+    text += `🕐 *Fecha:* ${new Date().toLocaleString('es-ES')}\n`;
+    text += `📊 *Contexto:* ${JSON.stringify(context)}`;
 
     const response = await twilioClient.messages.create({
         from: TWILIO_WHATSAPP_FROM,
@@ -86,7 +123,7 @@ async function sendWhatsAppAlert({ message, reply, context }) {
 
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, context } = req.body || {};
+        const { message, context, leadInfo } = req.body || {};
 
         if (!message || typeof message !== 'string') {
             res.status(400).json({ error: 'El campo "message" es obligatorio.' });
@@ -94,12 +131,51 @@ app.post('/api/chat', async (req, res) => {
         }
 
         const reply = await generateReply(message, context);
-        const alert = await sendWhatsAppAlert({ message, reply, context });
+        const alert = await sendWhatsAppAlert({ message, reply, context, leadInfo });
 
-        res.json({ reply, sentAlert: alert.sent, sid: alert.sid ?? null });
+        res.json({ 
+            reply, 
+            sentAlert: alert.sent, 
+            sid: alert.sid ?? null,
+            timestamp: new Date().toISOString()
+        });
     } catch (error) {
         console.error('Error en /api/chat:', error);
         res.status(500).json({ error: 'No se pudo procesar la solicitud.' });
+    }
+});
+
+// Nuevo endpoint para capturar leads
+app.post('/api/leads', async (req, res) => {
+    try {
+        const { name, email, phone, company, message, interest } = req.body || {};
+
+        if (!email || !message) {
+            res.status(400).json({ error: 'Email y mensaje son obligatorios.' });
+            return;
+        }
+
+        const leadInfo = { name, email, phone, company, interest };
+        const context = { source: 'lead_form', timestamp: new Date().toISOString() };
+        
+        const reply = `Gracias ${name || 'por contactarnos'}. Hemos recibido tu consulta sobre ${interest || 'nuestros servicios'}. Un especialista de ITAI te contactará pronto al email ${email} para brindarte una propuesta personalizada.`;
+        
+        const alert = await sendWhatsAppAlert({ 
+            message: `LEAD CAPTURADO: ${message}`, 
+            reply, 
+            context, 
+            leadInfo 
+        });
+
+        res.json({ 
+            success: true,
+            message: 'Lead capturado exitosamente',
+            sentAlert: alert.sent,
+            sid: alert.sid ?? null
+        });
+    } catch (error) {
+        console.error('Error en /api/leads:', error);
+        res.status(500).json({ error: 'No se pudo procesar el lead.' });
     }
 });
 
